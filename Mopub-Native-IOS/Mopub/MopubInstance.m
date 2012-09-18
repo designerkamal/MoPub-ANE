@@ -41,7 +41,7 @@
 
 - (id) initWithAdUnitId:(NSString*)aid
 {
-    if (self=[self init]) {
+    if ((self=[self init])) {
 
         aid_=aid;
             
@@ -52,7 +52,10 @@
         adView_.delegate = self;
         
         // Call for an ad.
-        [adView_ loadAd];        
+        [adView_ loadAd];  
+        
+        //Set IgnoreAutoRefresh to TRUE, prevents background ad request if create is called without showAd
+        [adView_ setIgnoresAutorefresh:YES];
 
     }
     
@@ -65,6 +68,7 @@
     if(adView_){
         adView_.frame = frame;
         [[[[UIApplication sharedApplication] keyWindow] rootViewController].view addSubview:adView_];
+        //setIgnoresAutorefresh:NO start refreshing ads when visible
         [adView_ setIgnoresAutorefresh:NO];
     }
 }
@@ -72,9 +76,11 @@
 - (void) dismissAdView
 {
     if(adView_){
+        
+        //setIgnoresAutorefresh:YES stops refreshing ads when hidden
         [adView_ setIgnoresAutorefresh:YES];
         [adView_ removeFromSuperview];
-//        [containerView_.view removeFromSuperview];
+
     }
 }
 
@@ -102,8 +108,9 @@
 
 // Implement MPAdViewDelegate's required method, -viewControllerForPresentingModalView.
 - (UIViewController *)viewControllerForPresentingModalView {
+
     return [[[UIApplication sharedApplication] keyWindow] rootViewController];
-//    return containerView_;
+
 }
 
 - (void) dealloc
@@ -126,7 +133,8 @@
 
 - (void)adViewDidFailToLoadAd:(MPAdView *)view
 {
-    
+    // remove adView if failed to load
+    [view removeFromSuperview];
 }
 
 - (void)adMobCustomEvent:(MPAdView *)theAdView
